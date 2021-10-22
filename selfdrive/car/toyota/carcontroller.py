@@ -78,8 +78,16 @@ class CarController():
           interceptor_gas_cmd = clip(compute_gb_pedal(pcm_accel_cmd, CS.out.vEgo), 0., 1.)
         pcm_accel_cmd = 0.18 - max(0, -actuators.accel)
 
+    new_accel_max = CarControllerParams.ACCEL_MAX
+    if CS.out.vEgo > 8.47:
+      if CS.out.vEgo >= 25.4:
+        new_accel_max = 0.05
+      else:
+        new_accel_max = 1.7766-(CS.out.vEgo*0.068)
+        
     pcm_accel_cmd, self.accel_steady = accel_hysteresis(pcm_accel_cmd, self.accel_steady, enabled)
-    pcm_accel_cmd = clip(pcm_accel_cmd, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    #pcm_accel_cmd = clip(pcm_accel_cmd, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    pcm_accel_cmd = clip(pcm_accel_cmd, CarControllerParams.ACCEL_MIN, new_accel_max)
 
     # steer torque
     new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
